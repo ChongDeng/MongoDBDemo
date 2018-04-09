@@ -1,0 +1,117 @@
+doc = {"x" : 1}
+Object.bsonsize(doc)
+
+
+master:
+
+mongo --nodb
+conn1 = new Mongo("localhost:20000")
+primaryDB = conn1.getDB("test")
+primaryDB.isMaster()
+
+
+second:
+
+mongo --nodb
+conn2 = new Mongo("localhost:20002")
+secondaryDB = conn2.getDB("test")
+secondaryDB.isMaster()
+
+for (i = 0; i < 10; i++){primaryDB.scut.insert({count: i})}
+
+primaryDB.adminCommand({"shutdown" : 1})
+
+
+close replicaset:
+
+scut_replica_set.stopSet()
+
+============================================
+failed:
+
+first create mongo.conf
+
+linux:
+mongod --replSet scut_set --config mongo.conf --fork
+
+windows:
+mongod --replSet scut_set --config mongo.conf
+mongod --config mongo.conf
+
+config = {
+    "_id" : "scut2_set",
+    "members" : [
+        {"_id" : 0, "host": "192.168.1.88"},
+        {"_id" : 1, "host": "192.168.1.86"},
+        {"_id" : 2, "host": "192.168.1.76"}
+    ]
+}
+
+db = (new Mongo("localhost:27017")).getDB("mongodb_tutorial")
+
+rs.initiate(config)
+
+========================
+method1:
+
+mongod --port=1111 --bind_ip=192.168.1.88 --replSet=rs3 --dbpath=C:\mydb2
+mongod --port=1111 --bind_ip=192.168.1.76 --replSet=rs3 --dbpath=C:\mydb2
+
+mongo --nodb
+db = (new Mongo("192.168.1.88:1111")).getDB("test")
+
+rs.initiate()
+rs.add('192.168.1.76:1111')
+
+========================
+method2:
+
+mongod --bind_ip=192.168.1.88 --replSet=rs4 --dbpath=C:\mydb2
+mongod --bind_ip=192.168.1.76 --replSet=rs4 --dbpath=C:\mydb2
+
+
+mongo --nodb
+db = (new Mongo("192.168.1.88")).getDB("test")
+
+rs.initiate()
+rs.add('192.168.1.76')
+rs.status()
+
+
+=================================
+method3: use config files:
+
+mongo.conf:
+
+dbpath=C:\mydb2
+replSet=rs5
+bind_ip=192.168.1.88
+
+
+
+mongod --config mongo.conf
+
+
+=================================
+method3.2: use existent database
+
+mongo.conf:
+
+dbpath=C:\mydb2
+replSet=scut_cluster
+bind_ip=192.168.1.88
+
+
+
+mongod --config mongo.conf
+
+==================================
+
+use IfcAnalytics
+db.createUser(
+   {
+     user: "fqyang",
+     pwd: "gnayqf",
+     roles: [ "readWrite", "dbAdmin" ]
+   }
+)
