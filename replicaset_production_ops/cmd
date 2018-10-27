@@ -1,0 +1,12 @@
+db.createUser( { user: "fqyang",
+                 pwd: "123",
+                 roles: [ { role: "clusterAdmin", db: "admin" },
+                          { role: "readAnyDatabase", db: "admin" },
+                          "readWrite"] })
+
+
+openssl rand -base64 64 > keyfile.dat
+    生成64字节的密钥文件
+chmod 600 keyfile.dat
+    建议把密钥文件的权限设置为600（针对启动mongo实例的那个用户）
+    接着需要把这个密钥文件拷贝到集群中每一个结点上（路由结点，元配置结点，分片结点上都要有这个密钥文件）
